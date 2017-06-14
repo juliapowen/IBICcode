@@ -1,0 +1,18 @@
+#!/bin/bash
+cd /projects2/act-plus/subjects/
+for s in ` ls -d 1090* `
+do
+	if [ -e $s/session1/EDI/EDImaps/FAtractsums.nii.gz ]
+	then
+
+		if [ ! -e $s/session1/EDI/FA_to_MNI2mm_deformed.nii.gz ]
+		then
+			echo "regsitering " $s
+			cd /projects2/act-plus/subjects/$s/session1/EDI
+			 ~/TractographyCode/IBICcode/registerEDItoMNI FAtractsums
+			cd ../../..
+		else
+			echo "done regsitering " $s
+		fi
+	fi
+done

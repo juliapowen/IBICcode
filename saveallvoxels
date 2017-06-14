@@ -1,0 +1,23 @@
+#!/bin/bash
+
+vol_dir1=$1
+vol_dir2=$2
+filename=$3
+
+rm cort.nii.gz
+rm subcort.nii.gz
+
+cd $vol_dir1
+
+find_the_biggest *s2fa.nii.gz ../cort.nii.gz
+
+cd ../$vol_dir2
+
+find_the_biggest *s2fa.nii.gz ../subcort.nii.gz
+
+cd ..
+
+fslmaths cort.nii.gz -add subcort.nii.gz $filename
+fslmaths $filename -bin $filename
+
+

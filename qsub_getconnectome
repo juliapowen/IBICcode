@@ -1,0 +1,14 @@
+#!/bin/bash
+root_dir=$1
+PBTK_dir=$2
+seed_dir=$3
+seed_list=$4
+
+cd $root_dir 
+
+for subj in ` ls -d 1* `
+do
+
+	qsub -cwd -V -S /bin/bash -N gettconnectome_${subj} -e /mnt/home/jpowen/TractographyCode/qout -o /mnt/home/jpowen/TractographyCode/qout \
+	/mnt/home/jpowen/TractographyCode/IBICcode/getconnectome $root_dir $PBTK_dir $subj $seed_dir $seed_list
+done

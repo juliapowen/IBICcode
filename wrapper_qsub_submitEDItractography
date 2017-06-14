@@ -1,0 +1,23 @@
+#!/bin/bash
+
+rootdir=$1
+filelist=$2
+atlas=$3 #("" for DK, "a2009s" for DS, "fxcn" for FXCN)
+bedpostdir=$4 #bedpostx_b1000
+edge_list=$5
+
+cd $rootdir
+
+for subj in ` ls -d 10906* `
+do
+	echo $subj
+	n=` ls $rootdir/$subj/session1/EDI/PBTKresults_EDI2/* | grep *.nii.gz | wc -l `
+	echo $n
+	nlines=` cat $edge_list | wc -l `
+	echo $nlines
+	if [ $n -lt $nlines ]
+	then
+		/mnt/home/jpowen/TractographyCode/IBICcode/qsub_submitEDItractography $rootdir allvols$atlas PBTKresults_EDI2 \
+		terminationmask$atlas.nii.gz bs.nii.gz $bedpostdir $subj $edge_list
+	fi
+done

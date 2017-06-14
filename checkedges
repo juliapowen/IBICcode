@@ -1,0 +1,17 @@
+#!/bin/bash
+#first input root dir
+#second input PBTK directory
+#third input list of edges
+
+echo $1
+cd $1/session1/EDI/$2
+n=1
+for line in ` cat $3 `
+do
+	echo $n
+	
+	a=` echo $line | cut -f 1 -d 2 `
+	b=` echo $line | cut -f 2 -d 2 `
+
+	fslview ../FA.nii.gz ../allvols/$a"_s2fa.nii.gz"  -l Green ../allvols/$b"_s2fa.nii.gz" -l Red twoway_consensus_edges/$a"to"$b".nii.gz" -l Blue-Lightblue
+done

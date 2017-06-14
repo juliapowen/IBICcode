@@ -1,0 +1,32 @@
+#!/bin/bash
+
+#first input = name of dir with masks
+#second input: path to TBSS directory
+#third input: name of output dir
+#fourth input: nifti file for all subjs
+
+ROI_masks=$1
+TBSS_dir=$2
+outdir=$3
+allnii=$4
+
+if [[ -d $TBSS_dir/$outdir ]]
+then
+echo $outdir "dir already there"
+else
+mkdir $TBSS_dir/$outdir
+fi
+
+cd $ROI_masks
+for mask in *.nii.gz
+do
+
+mask_name=${mask/.nii.gz/}
+outfile_name=${mask/.nii.gz/.txt}
+echo $mask
+fslmeants -i $TBSS_dir/$allnii -m ${mask} -o $TBSS_dir/$outdir/${outfile_name} 
+
+done
+
+cd ..
+

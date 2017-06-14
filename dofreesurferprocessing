@@ -1,0 +1,91 @@
+#!/bin/bash
+
+connectome_dir=$1
+freesurfer_dir=$2
+
+cd $connectome_dir
+
+for subj in ` ls -d 1* `
+do
+
+	cd $connectome_dir/$subj/session1
+
+	if [ ! -d EDI ]
+	then
+		mkdir EDI
+	fi
+	cd EDI
+
+	echo $subj
+
+	if [ -e $freesurfer_dir/$subj/stats/aseg.stats ]
+	then
+		echo "doing FS processing"	
+		if [ ! -e T1.nii.gz -o ! -e FA.nii.gz -o ! -e T12FA.mat ]
+		then
+			echo "registering FA to T1"
+			if [ ! -e FA.nii.gz ]
+			then
+				cp $connectome_dir/$subj/session1/dti/temp-fit_tensor/fa.nii.gz FA.nii.gz
+			fi
+			mri_convert $freesurfer_dir/$subj/mri/brain.mgz T1.nii.gz
+			echo "registering FA to T1"
+			flirt -in FA.nii.gz -ref T1.nii.gz -omat FA2T1.mat -out FA2T1.nii.gz
+			convert_xfm -omat T12FA.mat -inverse FA2T1.mat
+		fi
+	
+
+		if [ ! -e volumes_subcortical_s2fa/lh_thalamus_s2fa.nii.gz ]
+		then
+	
+			if [ ! -e volumes_cortical/rh.transversetemporal.nii.gz ]
+			then
+				echo "extracting volumes"
+				/mnt/home/jpowen/TractographyCode/IBICcode/extractlabels $freesurfer_dir $subj label_cortical		
+				/mnt/home/jpowen/TractographyCode/IBICcode/label2vol label_cortical volumes_cortical $freesurfer_dir
+			else
+				echo "skippping cortical volume extraction"
+			fi
+
+			if [ ! -e volumes_subcortical/lh_thalamus.nii.gz ]
+			then
+				echo "extracting volumes"
+				/mnt/home/jpowen/TractographyCode/IBICcode/make_subcortical_vols $freesurfer_dir $subj volumes_subcortical
+			else
+				echo "skippping subcortical volume extraction"
+			fi
+
+			echo "transforming volumes"
+			/mnt/home/jpowen/TractographyCode/IBICcode/transform_vol_all volumes_cortical volumes_cortical_s2fa $subj 0.2
+			/mnt/home/jpowen/TractographyCode/IBICcode/transform_vol_all volumes_subcortical volumes_subcortical_s2fa $subj 0.2
+	
+		fi
+
+		if [ ! -e exlusion_bsplusthalami.nii.gz -a -e bs.nii.gz ]
+		then
+			echo "generating exclusion masks"
+			/mnt/home/jpowen/TractographyCode/IBICcode/maskseedsandmaketerm $subj
+		fi
+	
+	else
+		echo "skipping FS processing"
+	fi
+
+
+	if [ ! -e allvols/rh_thalamus_s2fa.nii.gz ]
+	then
+		echo "copying all vols"
+		mkdir allvols
+		cp volumes_cortical_s2fa/* allvols/.
+		cp volumes_subcortical_s2fa/* allvols/.
+	
+	fi
+done
+
+
+
+
+
+
+
+

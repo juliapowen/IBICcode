@@ -1,0 +1,46 @@
+#!/bin/bash
+
+root_dir=$1
+PBTK_dir=$2
+subj=$3
+seed_dir=$4
+seed_list=$5
+n_seeds=` cat $seed_list | wc -l `
+
+#for subj in ` cat $3 `
+#do
+	echo $subj
+	cd $root_dir/$subj/session1/EDI/$PBTK_dir
+	rm seed_voxel_num.txt
+	for seed_name in ` cat $seed_list `
+	do
+		echo $seed_name
+		vs=` fslstats ../$seed_dir/$seed_name"_s2fa.nii.gz" -V | cut -f 1 -d " " `
+		echo $vs >> seed_voxel_num.txt
+		
+		if [ 1 -eq 1 ]
+		then
+		if [ -e $seed_name".txt" ]
+		then
+			n_lines=` cat $seed_name".txt" | wc -l `
+		else
+			n_lines=0
+		fi
+		
+			if [ $n_lines -ne $n_seeds ]
+			then
+				rm $seed_name".txt"
+				for target_name in ` cat $seed_list `
+				do
+					#vt=` fslstats ../$seed_dir/$target_name"_s2fa.nii.gz" -V | cut -f 1 -d " " `
+					fslmeants -i $seed_name/fdt_paths.nii.gz -m ../$seed_dir/$target_name"_s2fa.nii.gz" | head -n 1 >> $seed_name".txt"
+	
+				done
+				
+				else
+					echo "already did" $seed_name
+			fi
+		fi
+	done
+cd ../../../..
+#done

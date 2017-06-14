@@ -1,0 +1,12 @@
+#!/bin/bash
+
+for d in ` ls -d 1* `
+do
+	cd $d/session1/EDI
+
+	if [ ! -e bs.nii.gz ]
+	then
+		fslview FA.nii.gz
+	fi
+	cd ../../..
+done

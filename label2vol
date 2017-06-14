@@ -1,0 +1,29 @@
+#!/bin/bash
+
+#first input: label directory
+#second input: name of directory for volumes to be saved to
+
+label_dir_name=$1
+vol_dir_name=$2
+fs_dir=$3
+
+export SUBJECTS_DIR=$fs_dir
+
+mkdir $vol_dir_name
+
+cd $label_dir_name
+
+for lab in *.label
+do
+
+	vol_name=${lab/.label/.nii.gz}
+
+	if [ ! -e ../$vol_dir_name/$vol_name.nii.gz ]
+	then
+				
+		mri_label2vol --label $lab --temp ../T1.nii.gz --identity --o ../$vol_dir_name/$vol_name
+	fi
+
+done
+
+cd ..

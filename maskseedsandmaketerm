@@ -1,0 +1,28 @@
+#!/bin/bash
+
+low_FA_thresh=0.05  
+high_FA_thresh=1
+low_FA_thresh_sc=0.05
+high_FA_thresh_sc=0.4 #siemens0.2 
+high_FA_thresh_sc_thal=0.4 #siemens0.35 
+
+#mask cortical seeds based on FA
+/mnt/home/jpowen/TractographyCode/IBICcode/FAmaskseeds volumes_cortical_s2fa volumes_cortical_s2fa_m $low_FA_thresh $high_FA_thresh 
+
+#mask subcortical seeds based on FA
+/mnt/home/jpowen/TractographyCode/IBICcode/FAmaskseeds volumes_subcortical_s2fa volumes_subcortical_s2fa_m $low_FA_thresh_sc $high_FA_thresh_sc $high_FA_thresh_sc_thal 
+
+/mnt/home/jpowen/TractographyCode/IBICcode/saveallvoxels volumes_cortical_s2fa_m volumes_subcortical_s2fa_m allvoxelscortsubcort.nii.gz $subjname
+
+rm terminationmask*
+
+#make termination masks
+fslmaths FA.nii.gz -uthr .15 terminationmask.nii.gz
+
+fslmaths terminationmask.nii.gz -add bs.nii.gz terminationmask.nii.gz
+fslmaths terminationmask.nii.gz -bin terminationmask.nii.gz
+fslmaths terminationmask.nii.gz -mul allvoxelscortsubcort.nii.gz intersection.nii.gz
+fslmaths terminationmask.nii.gz -sub intersection.nii.gz terminationmask.nii.gz
+
+fslmaths bs.nii.gz -add volumes_subcortical_s2fa_m/lh_thalamus_s2fa.nii.gz -add volumes_subcortical_s2fa_m/rh_thalamus_s2fa.nii.gz exlusion_bsplusthalami.nii.gz
+

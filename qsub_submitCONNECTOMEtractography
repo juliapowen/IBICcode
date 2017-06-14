@@ -1,0 +1,71 @@
+#!/bin/bash
+
+#first input: root directory for vols
+#second input: volume directory name 
+#third input: output dir name
+#fourth input: termination mask name
+#fifth input: eclusion mask
+#sixth input: bedpost dir base name
+#seventh input: subject name
+
+root_dir=$1
+vol_dir=$2
+out_dir_trac=$3
+termination=$4
+exclusion=$5
+bedpost_dir=$6
+subjname=$7
+
+#make sure subject dir exists in root_dir
+cd $root_dir/$subjname/session1/EDI
+
+echo $PWD
+#make sure out_dir_trac for tracking exists in root_dir/subjname
+if [ -d "$out_dir_trac" ]
+then
+echo "all ready there"
+else
+mkdir $out_dir_trac
+fi
+
+cd $vol_dir
+
+for seed in *s2fa.nii.gz
+do
+	seed_name=${seed/_s2fa.nii.gz/}
+
+	if [[ "$seed_name" == *Unknown ]]
+	then
+		rm $seed_name
+		echo $seed_name
+		continue
+	fi
+
+	cd $root_dir/$subjname/session1/EDI/$out_dir_trac
+
+	out_dir_name=$seed_name
+
+	if [ -d "$out_dir_name" ]
+	then
+		x=1
+	else
+		mkdir $out_dir_name
+	fi
+
+	cd $out_dir_name
+
+	if [[ -e fdt_paths.nii.gz ]]
+	then
+		echo $seed_name" is already done"
+	else
+		qsub -cwd -V -S /bin/bash -e /mnt/home/jpowen/TractographyCode/qout -o /mnt/home/jpowen/TractographyCode/qout \
+		/mnt/home/jpowen/TractographyCode/IBICcode/fdt_script_seedandtermandexclusion_array $root_dir $out_dir_trac $subjname $seed_name $root_dir/$subjname/session1/EDI/$vol_dir/$seed \
+		$termination $exclusion $bedpost_dir
+	fi
+
+done
+
+               				   
+
+
+

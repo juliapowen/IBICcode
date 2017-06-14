@@ -1,0 +1,34 @@
+#!/bin/bash
+
+for s in ` ls -d 1* `
+do
+	echo $s
+	cd $s/session1/EDI/$1
+	rm numvox_edgeoverlap.txt
+	rm totvox_edgeoverlap.txt
+
+	n=1
+	for line in ` cat $2 `
+	do
+		echo $n
+		a=` echo $line | cut -f 1 -d 2 `
+		b=` echo $line | cut -f 2 -d 2 `
+		let nv=0
+		let tv=0
+		if [ -e twoway_consensus_edges/$a"to"$b".nii.gz" ]
+		then
+			fslmaths ../Flair_wmh_mask_FA.nii.gz -add twoway_consensus_edges/$a"to"$b".nii.gz" -thr 2 added.nii.gz
+			nv=` fslstats added.nii.gz -V | cut -f 1 -d " " `
+			tv=` fslstats twoway_consensus_edges/$a"to"$b".nii.gz" -V | cut -f 1 -d " " `
+			echo $nv >> numvox_edgeoverlap.txt
+			echo $tv >> totvox_edgeoverlap.txt
+			rm added.nii.gz
+		else
+			echo $nv >> numvox_edgeoverlap.txt
+			echo $tv >> totvox_edgeoverlap.txt
+		fi
+		
+		let n=n+1
+	done	
+	cd ../../../..	
+done

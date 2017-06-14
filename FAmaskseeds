@@ -1,0 +1,47 @@
+#!/bin/bash
+
+#first input: root directory for vols
+#second input: volume directory name (input)
+#third input: volume directory name (output) 
+#fourth input: subject name
+#usage /data/bil-mb7/JPO/connectome/FAmasksseeds  $PWD volumes_coarse_s2fa volumes_coarse_s2fa_m "subj_dir_name"
+
+vol_dir=$1
+vol_out_dir=$2
+lth=$3
+uth=$4
+uth2=$5
+
+
+if [ -d "$vol_out_dir" ]
+then
+	echo "remasking"
+	rm -r $vol_out_dir
+	mkdir $vol_out_dir
+else
+	mkdir $vol_out_dir
+fi
+
+rm tmp1.nii.gz
+rm tmp2.nii.gz 
+fslmaths FA.nii.gz -thr $lth -uthr $uth -bin tmp1.nii.gz
+fslmaths FA.nii.gz -thr $lth -uthr $uth2 -bin tmp2.nii.gz
+
+cd $vol_dir
+
+for seed in *s2fa.nii.gz
+do
+	if [[ "$seed" =~ "thalamus" ]]
+	then
+		fslmaths $seed -mas ../tmp2.nii.gz ../$vol_out_dir/$seed
+	else
+		fslmaths $seed -mas ../tmp1.nii.gz ../$vol_out_dir/$seed
+	fi
+
+done
+
+cd ..
+rm tmp1.nii.gz
+rm tmp2.nii.gz
+
+

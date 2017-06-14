@@ -1,0 +1,21 @@
+#!/bin/bash
+
+#first input: where masks should be saved
+
+if [ ! -e $1/JHUmasks_nonskel ]
+then
+mkdir $1/JHUmasks_nonskel
+fi
+
+while read line
+do
+
+n=` echo $line | cut -d ' ' -f 1 `
+echo $n
+
+mask=` echo $line | cut -d ' ' -f 2 `
+echo $mask
+
+fslmaths /usr/share/fsl/5.0/data/atlases/JHU/JHU-ICBM-labels-2mm.nii.gz -thr $n -uthr $n -bin $1/JHUmasks_nonskel/$mask.nii.gz
+
+done < /mnt/home/jpowen/TractographyCode/IBICcode/LabelLookupTable_flipped.txt

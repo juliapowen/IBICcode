@@ -1,0 +1,54 @@
+#!/bin/bash
+
+#first input: root directory for vols
+#second input: volume directory name 
+#third input: output dir name
+#fourth input: termination mask name
+#fifth input: eclusion mask
+#sixth input: bedpost dir base name
+#seventh input: subject name
+#eigth input: edge list
+
+root_dir=$1
+vol_dir=$2
+out_dir_trac=$3
+termination=$4
+exclusion=$5
+bedpost_dir=$6
+subjname=$7
+edge_list=$8
+
+#make sure subject dir exists in root_dir
+cd $root_dir/$subjname/session1/EDI
+
+echo $PWD
+#make sure out_dir_trac for tracking exists in root_dir/subjname
+if [ -d "$out_dir_trac" ]
+then
+echo "all ready there"
+else
+mkdir $out_dir_trac
+fi
+
+for line in ` cat $edge_list `
+do
+	seed_name=` echo $line | cut -f 1 -d 2 `
+	target_name=` echo $line | cut -f 2 -d 2 `
+
+	cd $root_dir/$subjname/session1/EDI/$out_dir_trac
+
+	if [[ -e $seed_name"to"$target_name".nii.gz" ]]
+	then
+		echo $seed_name"to"$target_name" is already done"
+	else
+		qsub -cwd -V -S /bin/bash -N $seed_name"to"$target_name -q global.q -e /mnt/home/jpowen/TractographyCode/qout -o /mnt/home/jpowen/TractographyCode/qout \
+		/mnt/home/jpowen/TractographyCode/IBICcode/fdt_script_seedandtermandspecificexclusion $root_dir $out_dir_trac $subjname $seed_name $target_name \
+		$root_dir/$subjname/session1/EDI/$vol_dir/$seed_name"_s2fa.nii.gz" $root_dir/$subjname/session1/EDI/$vol_dir/$target_name"_s2fa.nii.gz"  \
+		$root_dir/$subjname/session1/EDI/$termination $root_dir/$subjname/session1/EDI/$exclusion $bedpost_dir
+	fi
+done
+
+               				   
+
+
+

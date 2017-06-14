@@ -1,0 +1,50 @@
+#!/bin/bash
+
+rootdir=$1
+filelist=$2
+atlas=$3 #("" for DK, "a2009s" for DS, "fxcn" for FXCN)
+highres_on=$4 # 0 is default
+allowthalam=$5 #1 is default
+bedpostdir=$6 #bedpostx_b1000
+distcorr=$7 #0 is default
+
+if [ $highres_on -eq 1 ]
+then
+
+	highres_add_on="_highres"
+else
+	highres_add_on=""
+fi
+
+cd $rootdir
+
+for subj in ` ls -d 1090* `
+do
+	echo $subj
+	n=` ls $rootdir/$subj/session1/EDI/PBTKresults$atlas$bedpostdir*"distcorr"$distcorr/* | grep fdt_paths.nii.gz | wc -l `
+	echo $n
+	nseeds=` ls $rootdir/$subj/session1/EDI/allvols$atlas*/* | grep .nii.gz | wc -l `
+
+	if [ $allowthalam -eq 1 ]
+	then
+		let nseeds=$nseeds+$nseeds
+	fi
+
+	echo $nseeds
+	if [ $n -lt $nseeds ]
+	then
+		if [ ! -d $subj ]
+		then
+			mkdir $subj
+		fi
+	
+		if [ $allowthalam -eq 1 ]
+		then
+			/mnt/home/jpowen/TractographyCode/IBICcode/qsub_submitCONNECTOMEtractography $rootdir allvols$atlas PBTKresults$atlas$bedpostdir"distcorr"$distcorr terminationmask$atlas.nii.gz bs.nii.gz \
+			$bedpostdir $subj  
+		else
+			/mnt/home/jpowen/TractographyCode/IBICcode/qsub_submitCONNECTOMEtractography $rootdir allvols$atlas PBTKresults$atlas$bedpostdir"_thalexcl"$highres_add_on"distcorr"$distcorr \
+			terminationmask$atlas.nii.gz exlusion_bsplusthalami.nii.gz $bedpostdir $subj  
+		fi
+	fi
+done

@@ -1,0 +1,22 @@
+#!/bin/bash
+
+#first input: path to mean FA skeleton mask
+#second input: path to where masks should be saved
+echo $2
+if [ ! -e $2/JHUmasks ]
+then
+mkdir $2/JHUmasks
+fi
+
+while read line
+do
+
+n=` echo $line | cut -d ' ' -f 1 `
+echo $n
+
+mask=` echo $line | cut -d ' ' -f 2 `
+echo $mask
+
+fslmaths /data/microcorr3/JPO/Tractmasks/JHU-WhiteMatter-labels-1mm.nii.gz -thr $n -uthr $n -mas $1 -bin $2/JHUmasks/$mask.nii.gz
+
+done < /data/microcorr3/JPO/Tractmasks/LabelLookupTable_flipped.txt

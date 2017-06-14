@@ -1,0 +1,25 @@
+#!/bin/bash
+
+#first input=freesurfer dir
+#second input= subject name
+#third input=fs vol dir
+
+freesurfer_dir=$1
+subj=$2
+vol_dir_name=$3
+
+mkdir $vol_dir_name
+
+mri_convert $freesurfer_dir/$subj/mri/aseg.mgz aseg.nii.gz
+
+for lines in $(cat /mnt/home/jpowen/TractographyCode/IBICcode/subcortical_index)
+do
+
+	num=$(echo $lines| cut -d':' -f1)
+	area=$(echo $lines| cut -d':' -f2)
+	echo $num	
+	echo $area
+	file_out="${area}.nii.gz"
+	fslmaths aseg.nii.gz -uthr $num -thr $num -bin $vol_dir_name/$file_out
+
+done

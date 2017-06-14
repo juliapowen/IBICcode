@@ -1,0 +1,38 @@
+#!/bin/bash
+
+root_dir=$1
+out_dir_trac=$2   
+subjname=$3
+seed_name=$4
+seed_path=$5                 				   
+termination=$6
+exclusion=$7
+bedpost_dir=$8
+
+echo "root dir"
+echo $root_dir
+echo "PBTK dir"
+echo $out_dir_trac
+echo "subj"
+echo $subjname
+echo "seed"
+echo $seed_name
+echo "exclusion"
+echo $exclusion
+echo "termination"
+echo $termination
+ehco "bedpost dir"
+echo $bedpost_dir
+
+out_dir=$root_dir/$subjname/session1/EDI/$out_dir_trac/$seed_name
+mkdir $out_dir
+
+START=$(date +%s.%N)
+echo $START
+
+$FSLDIR/bin/probtrackx2 -x $seed_path  -l -c 0.2 -S 2000 --steplength=0.5 -P 5000 --avoid=$root_dir/$subjname/session1/EDI/$exclusion --stop=$root_dir/$subjname/session1/EDI/$termination --forcedir --opd -s $root_dir/$subjname/session1/dti/$bedpost_dir.bedpostX/merged -m $root_dir/$subjname/session1/dti/$bedpost_dir.bedpostX/nodif_brain_mask --dir=$out_dir  
+
+END=$(date +%s.%N)
+echo $END
+DIFF=$(echo "$END - $START" | bc)
+echo $DIFF

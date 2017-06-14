@@ -1,0 +1,14 @@
+#!/bin/bash
+
+#first input: FreeSurfer dir
+#second input: subj name
+
+export SUBJECTS_DIR=$1
+subjname=$2
+label_dir_name=$3
+
+mkdir $label_dir_name
+
+mri_annotation2label --subject $subjname --hemi rh --annotation aparc --outdir $label_dir_name
+
+mri_annotation2label --subject $subjname --hemi lh --annotation aparc --outdir $label_dir_name

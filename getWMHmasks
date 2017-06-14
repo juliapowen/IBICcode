@@ -1,0 +1,28 @@
+#!/bin/bash
+
+rm ~/Julia_WMH/all_meanEDIinWMH.txt
+rm ~/Julia_WMH/all_meanFAinWMH.txt
+
+for s in ` ls -d 1* `
+do
+	echo $s
+	cd $s/session1/EDI
+
+	fslroi ../dti/bedpostx/data.nii.gz b0.nii.gz 0 1
+	fslmaths b0.nii.gz -mas ../dti/bedpostx/nodif_brain_mask.nii.gz b0.nii.gz
+	flirt -in ../flair/Flair_brain.nii.gz -ref b0.nii.gz -omat flair2b0.mat -out flair2b0.nii.gz
+	flirt -in ../flair/Flair_wmh_mask.nii.gz -ref b0.nii.gz -applyxfm -init flair2b0.mat -interp nearestneighbour -out Flair_wmh_mask_FA.nii.gz
+	
+	fslmeants -i EDImaps/FAtractsums.nii.gz -m Flair_wmh_mask_FA.nii.gz -o meanEDIinWMH.txt
+	fslmeants -i FA.nii.gz -m Flair_wmh_mask_FA.nii.gz -o meanFAinWMH.txt
+	
+	cat meanEDIinWMH.txt >> ~/Julia_WMH/all_meanEDIinWMH.txt
+	cat meanFAinWMH.txt >> ~/Julia_WMH/all_meanFAinWMH.txt
+
+	#cluster -i Flair_wmh_mask_FA.nii.gz -t 1 -o cluster_index --osize=cluster_size > cluster_info.txt
+
+	#more cluster_info.txt | head -2 | tail -1 | cut -f 2
+
+	cd ../../..
+
+done

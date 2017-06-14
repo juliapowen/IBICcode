@@ -1,0 +1,27 @@
+#!/bin/bash
+
+#first input: volume input directory
+#second input: name of directory for transformed volumes to be saved to
+#third input: subj name
+#fourth input: threshold for blur clean up
+
+vol_dir_name_in=$1
+vol_dir_name_out=$2
+subjname=$3
+thresh=$4
+
+mkdir $vol_dir_name_out
+
+cd $vol_dir_name_in
+echo $PWD
+for vol in ` ls *nii.gz `
+do
+	echo $vol
+	vol_name=${vol/.nii.gz/_s2fa.nii.gz}
+	flirt -in $vol  -ref ../FA.nii.gz -out ../$vol_dir_name_out/${vol_name}  -applyxfm -init ../T12FA.mat
+	fslmaths ../$vol_dir_name_out/${vol_name} -thr $thresh -bin ../$vol_dir_name_out/${vol_name} 
+
+done
+
+cd ..
+

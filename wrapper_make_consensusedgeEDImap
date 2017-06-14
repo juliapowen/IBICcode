@@ -1,0 +1,13 @@
+#!/bin/bash
+root_dir=$1
+PBTK_dir=$2
+edge_list=$3
+EDImapsuffix=$4
+
+cd $root_dir
+
+for s in ` ls -d 1090* `
+do
+	qsub -cwd -V -S /bin/bash -N makeEDImap_${s} -e /mnt/home/jpowen/TractographyCode/qout -o /mnt/home/jpowen/TractographyCode/qout \
+	~/TractographyCode/IBICcode/make_consensusedgeEDImap $root_dir/$s $PBTK_dir $edge_list $EDImapsuffix 	
+done

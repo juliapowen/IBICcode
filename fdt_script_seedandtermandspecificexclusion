@@ -1,0 +1,56 @@
+#!/bin/bash
+#TractographyCode/IBICcode/fdt_script_seedandtermandspecificexclusion /projects2/act-plus/subjects PBTKresults_EDI 109001 lh.bankssts_s2fa rh.bankssts_s2fa /projects2/act-plus/subjects/109001/EDI/allvols/lh.bankssts_s2fa.nii.gz /projects2/act-plus/subjects/109001/EDI/allvols/rh.bankssts_s2fa.nii.gz /projects2/act-plus/subjects/109001/EDI/terminationmask.nii.gz
+
+root_dir=$1
+out_dir_trac=$2   
+subjname=$3
+seed_name=$4
+target_name=$5
+seed_path=$6
+target_path=$7                         				   
+termination=$8
+exclusion=$9
+bedpost_dir=${10}
+
+echo "root dir"
+echo $root_dir
+echo "PBTK dir"
+echo $out_dir_trac
+echo "subj"
+echo $subjname
+echo "seed"
+echo $seed_name
+echo "target"
+echo $target_name
+echo "termination"
+echo $termination
+echo "exclusion"
+echo $exclusion
+echo "bedpost dir"
+echo $bedpost_dir
+
+mkdir $root_dir/$subjname/session1/EDI/$out_dir_trac/
+out_dir=$root_dir/$subjname/session1/EDI/$out_dir_trac/$seed_name"to"$target_name
+mkdir $out_dir
+cd $out_dir
+
+START=$(date +%s.%N)
+echo $START
+
+fslmaths $root_dir/$subjname/session1/EDI/allvoxelscortsubcort.nii.gz -sub $seed_path".nii.gz" -add $termination -bin $out_dir/$seed_name"to"$target_name"termmask.nii.gz"
+
+fslmaths $root_dir/$subjname/session1/EDI/allvoxelscortsubcort.nii.gz -sub $seed_path".nii.gz" -sub $target_path".nii.gz" -add $exclusion -bin $out_dir/$seed_name"to"$target_name"exlmask.nii.gz"
+
+echo $target_path >> $out_dir/$seed_name"to"$target_name"waypoints.txt"
+
+$FSLDIR/bin/probtrackx2 -x $seed_path  -l --onewaycondition --pd -c 0.2 -S 2000 --steplength=0.5 -P 1000 --fibthresh=0.01 --distthresh=0.0 --sampvox=0.0 --avoid=$out_dir/$seed_name"to"$target_name"exlmask.nii.gz" --stop=$out_dir/$seed_name"to"$target_name"termmask.nii.gz" --forcedir --opd -s $root_dir/$subjname/session1/dti/$bedpost_dir.bedpostX/merged -m $root_dir/$subjname/session1/dti/$bedpost_dir.bedpostX/nodif_brain_mask --dir=$out_dir --waypoints=$out_dir/$seed_name"to"$target_name"waypoints.txt" --waycond=AND
+
+cd ..
+
+mv $seed_name"to"$target_name/fdt_paths.nii.gz $seed_name"to"$target_name".nii.gz"
+rm -r $seed_name"to"$target_name
+
+END=$(date +%s.%N)
+echo $END
+DIFF=$(echo "$END - $START" | bc)
+echo $DIFF
